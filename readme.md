@@ -1,5 +1,11 @@
 # Bank Customer Segmentation
 
+## Live Demo
+- **Frontend:** https://bank-customer-segmentation.vercel.app/
+- **Backend API:** https://bank-customer-segmentation-door.onrender.com/docs
+
+---
+
 ## What is this project?
 A machine learning web app that segments bank customers into 5 groups
 based on their spending behavior, credit usage, and activity level.
@@ -13,9 +19,6 @@ Banks have thousands of customers with different spending habits.
 Instead of treating all customers the same, banks can group similar
 customers together and offer each group a tailored product or service.
 
-This model takes customer financial data and assigns them to a segment
-so the bank can make smarter decisions.
-
 ---
 
 ## Dataset
@@ -26,20 +29,88 @@ so the bank can make smarter decisions.
 
 ---
 
+## Test the Model
+
+### Active High Spender
+| Field | Value |
+|-------|-------|
+| Customer Age | 42 |
+| Credit Limit | 14000 |
+| Total Trans Amt | 14000 |
+| Total Trans Ct | 110 |
+| Avg Utilization Ratio | 0.18 |
+| Months Inactive | 2 |
+
+Expected: **Active High Spenders**
+
+---
+
+### Stretched Customer
+| Field | Value |
+|-------|-------|
+| Customer Age | 46 |
+| Credit Limit | 2500 |
+| Total Trans Amt | 3800 |
+| Total Trans Ct | 66 |
+| Avg Utilization Ratio | 0.65 |
+| Months Inactive | 2 |
+
+Expected: **Stretched Customers**
+
+---
+
+### Wealthy Underuser
+| Field | Value |
+|-------|-------|
+| Customer Age | 42 |
+| Credit Limit | 30000 |
+| Total Trans Amt | 7000 |
+| Total Trans Ct | 80 |
+| Avg Utilization Ratio | 0.05 |
+| Months Inactive | 2 |
+
+Expected: **Wealthy Underusers**
+
+---
+
+## Customer Segments
+
+| Cluster | Segment | Description |
+|---------|---------|-------------|
+| 0 | Active High Spenders | High credit, highest spend |
+| 1 | Stretched Customers | Low credit, maxing out card |
+| 2 | Inactive Low Spenders | Older, low spend, churn risk |
+| 3 | Wealthy Underusers | High credit, barely spends |
+| 4 | Young Moderates | Youngest, moderate everything |
+
+---
+
 ## Algorithm — K-Means Clustering
-K-Means is an unsupervised machine learning algorithm.
-Unlike regression or classification, there is no target column.
-The algorithm finds hidden groups (clusters) in the data by itself.
+K-Means is unsupervised — no target column, no train/test split.
+It finds hidden groups in data by itself.
 
-How it works:
-1. Pick K number of clusters (we chose K=5)
-2. Randomly place K center points
-3. Assign each customer to the nearest center
-4. Move centers to the average of their group
-5. Repeat until centers stop moving
+We used the Elbow Method to find K=5 as the optimal number of clusters.
+Data was scaled with StandardScaler before clustering so no single
+feature dominates the distance calculation.
 
-We used the Elbow Method to find the best K value.
-The elbow chart showed the curve flattening around K=5.
+---
+
+## Evaluation
+K-Means has no accuracy score like supervised models.
+We evaluated clusters by interpreting their average values:
+- Credit limit per cluster
+- Spending amount per cluster  
+- Utilization ratio per cluster
+
+---
+
+## Tech Stack
+| Layer | Technology |
+|-------|------------|
+| Model | Python, Scikit-learn, K-Means |
+| Backend | FastAPI, Uvicorn |
+| Frontend | React, Vite |
+| Deployment | Render (backend), Vercel (frontend) |
 
 ---
 
@@ -50,65 +121,5 @@ The elbow chart showed the curve flattening around K=5.
 | Credit_Limit | Maximum credit allowed |
 | Total_Trans_Amt | Total transaction amount |
 | Total_Trans_Ct | Total number of transactions |
-| Avg_Utilization_Ratio | % of credit limit used |
+| Avg_Utilization_Ratio | % of credit limit used (0.0 to 1.0) |
 | Months_Inactive_12_mon | Months inactive in last year |
-
----
-
-## Customer Segments Found
-
-| Cluster | Segment Name | Description |
-|---------|-------------|-------------|
-| 0 | Active High Spenders | High credit, highest spend, moderate utilization |
-| 1 | Stretched Customers | Low credit, maxing out their card (65% utilization) |
-| 2 | Inactive Low Spenders | Older, low spend, most inactive — churn risk |
-| 3 | Wealthy Underusers | Highest credit but barely spends — untapped potential |
-| 4 | Young Moderates | Youngest customers, moderate credit and spend |
-
----
-
-## Why No Train/Test Split?
-In supervised learning we split data to test if predictions are correct.
-In clustering there are no correct answers — no labels to check against.
-So we use ALL the data for training.
-
----
-
-## Why We Scaled the Data
-K-Means measures distance between data points.
-If Credit_Limit (0-34,000) and Age (20-70) are on different scales,
-credit limit dominates every calculation just because its numbers are bigger.
-
-StandardScaler puts all columns on the same scale so every feature
-has equal influence on the clustering.
-
----
-
-## Tech Stack
-| Layer | Technology |
-|-------|------------|
-| Model | Python, Scikit-learn, K-Means |
-| Backend | FastAPI, Uvicorn |
-| Frontend | React, Vite |
-| Storage | Joblib (.pkl model files) |
-
----
-
-## How to Run Locally
-
-### Backend
-```bash
-source new_venv/Scripts/activate
-pip install -r requirements.txt
-uvicorn main:app --reload
-```
-
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-API runs on: http://127.0.0.1:8000
-UI runs on: http://localhost:5173
